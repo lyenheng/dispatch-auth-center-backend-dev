@@ -1,0 +1,135 @@
+server:
+  servlet-path:
+  tomcat:
+    max-http-form-post-size: 1024000000
+  #请求参数过长设置
+  max-http-header-size: 102400
+spring:
+  profiles:
+    active: @profiles.active@
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+
+  jpa:
+    database: MYSQL
+    show-sql: false
+#    physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+    format-sql: true
+    properties.hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+
+  http:
+    multipart:
+      max-file-size: 128MB
+      max-request-size: 128MB
+
+  messages:
+    basename: authority, authz-api, authz-security, message
+
+commons:
+  #跨域支持
+  cors:
+    enabled: true
+    maxAge: 3600
+    allowCredentials: true
+    allowedOrigins:
+      - '*'
+    allowedHeaders:
+      - '*'
+    allowedMethods:
+      - '*'
+  websocket:
+    # 监听的节点
+    endPoint: "/ws/stomp"
+    # 跨域支持
+    allowedOrigins: "*"
+    # 可订阅的主题
+    enableSimpleBroker:
+      - "/user"
+      - "/window"
+      - "/message"
+      - "/topic"
+      - "/auth_progress_bar"
+      - "/interface_status"
+      - "/auth_cancelCode"
+    # 客户端向服务器发消息时的前缀
+    applicationDestinationPrefixes: "/ws"
+    # 心跳间隔
+    heartBeatInterval: 10000
+
+#跨域支持
+web.cors:
+  enabled: true
+  allowCredentials: true
+  allowedOrigins:
+    - '*'
+  allowedHeaders:
+    - '*'
+  allowedMethods:
+    - '*'
+
+commons.authz:
+  enable: true
+
+commons.authz.security:
+  permitAllUrl:
+    - "/css/**"
+    - "/js/**"
+    - "/img/**"
+    - "/static/**"
+    - "/public/**"
+    - "/code/info"
+    - "/oauth2/**"
+    - "/security/loginPage"
+    - "/callback/**"
+    - "/_ping"
+    - "/login.html"
+    - "/global-config.json"
+    - "/error"
+    - "/authority/**"
+    - "/qr/**"
+    - "/u2f/**"
+    - "/up/**"
+    - "/authentication/**"
+    - "/client/**"
+    - "/login_page/**"
+    - "/code/**"
+    - "/check/version"
+    - "/secret_key/**"
+    - "/scheduleManagement/**"
+    - "/vlineInfo/**"
+    - "/scheduleRoleManage/**"
+    - "/scheduleRoleManagement/**"
+    - "/**"
+
+  # 跳转至登录页的url
+  loginUrl: /kd-server/oauth2/authorize
+  # 登录异常的url
+  expiredUrl: /kd-server/auth/unauthorized
+  # 未授权
+  unauthorizedUrl: /kd-server/auth/unauthorized
+
+swagger:
+  base-package: com.kedacom.dispatch.ac.web.controller
+
+avcs.dispatch.secretKey.excludeUrl:
+  - "/secret_key/encrypt"
+  - "/secret_key/decrypt"
+  - "/secret_key/expirationTime"
+  - "/secret_key/activation"
+  - "/secret_key/updateActivation"
+
+keda:
+  services:
+    media:
+      serverUri: http://mediaschedule:8085
+
+dispatch.common:
+  waterMark:
+    url: http://127.0.0.1
+    token: token

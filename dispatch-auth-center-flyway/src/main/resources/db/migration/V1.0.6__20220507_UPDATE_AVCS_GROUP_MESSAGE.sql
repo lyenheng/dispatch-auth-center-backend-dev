@@ -1,0 +1,2 @@
+ALTER TABLE `group_history_info` MODIFY COLUMN `meet_room_id` bigint(20) NULL COMMENT '会场id' AFTER `mp_dispatch_name`;
+ALTER TABLE `group_history_info` MODIFY COLUMN `meet_plan_id` bigint(20) NULL COMMENT '预案id' AFTER `meet_room_name`;

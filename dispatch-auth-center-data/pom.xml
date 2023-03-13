@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>dispatch-auth-center-backend</artifactId>
+        <groupId>com.kedacom.dispatch.ac</groupId>
+        <version>2.0.3</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dispatch-auth-center-data</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.kedacom.kidp.base</groupId>
+            <artifactId>data-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.kedacom.dispatch.common</groupId>
+            <artifactId>dispatch-common-data</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.kedacom.dispatch.common</groupId>
+            <artifactId>dispatch-common-rbac-auth</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.kedacom.dispatch.common</groupId>
+            <artifactId>dispatch-common-adc-svc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>spring-cloud-netflix-ribbon</artifactId>
+                    <groupId>org.springframework.cloud</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.kedacom.dispatch.common</groupId>
+            <artifactId>dispatch-common-rbac-svc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.kedacom.dispatch.common</groupId>
+            <artifactId>dispatch-common-advice</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.kedacom.avcs.dispatch.cache</groupId>
+            <artifactId>dispatch-cache-service</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

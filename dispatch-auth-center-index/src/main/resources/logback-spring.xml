@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+    <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径-->
+    <springProfile name="dev">
+        <property name="LOG_HOME" value="logs"/>
+        <property name="DEVICE_LOG_LEVEL" value="ERROR"/>
+    </springProfile>
+
+    <springProfile name="devtest,standard">
+        <property name="LOG_HOME" value="/data/logs"/>
+        <property name="DEVICE_LOG_LEVEL" value="ERROR"/>
+    </springProfile>
+
+    <springProfile name="ltecloud,standardcloud">
+        <property name="LOG_HOME" value="/log/user"/>
+        <property name="DEVICE_LOG_LEVEL" value="ERROR"/>
+    </springProfile>
+
+    <!-- 按照每天生成日志文件 -->
+    <appender name="DAILY_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/auth.@build.finalName@.@profiles.active@.%d{yyyy-MM-dd}-%i.log</FileNamePattern>
+            <!--<FileNamePattern>C:/logs/log.@build.finalName@.%d{yyyy-MM-dd}.log</FileNamePattern>-->
+            <!--日志文件保留天数-->
+            <MaxHistory>10</MaxHistory>
+            <totalSizeCap>50GB</totalSizeCap>
+            <!--日志文件最大的大小-->
+            <TimeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <MaxFileSize>20MB</MaxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <!--<encoder class="com.kedacom.ctsp.query.feign.rewrite.PatternLayoutEncoderReWrite">-->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <!--<pattern>%msg</pattern>-->
+            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss} %thread %-5level %logger{50} %M %L - %msg%n</pattern>-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %thread %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <logger name="jdbc.sqlonly" level="ERROR" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="jdbc.resultset" level="ERROR" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="jdbc.connection" level="OFF" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="jdbc.sqltiming" level="OFF" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="jdbc.audit" level="OFF" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="org.flywaydb.core.Flyway" level="ERROR" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="org.quartz.core.QuartzSchedulerThread" level="DEBUG" additivity="false">
+        <appender-ref ref="DAILY_LOG"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="druid.sql" level="DEBUG" additivity="false">
+        <appender-ref ref="DAILY_LOG"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="com.kedacom.avcs.dispatch.common.base" level="INFO" additivity="false">
+        <appender-ref ref="DAILY_LOG"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- common组件等级为INFO -->
+    <logger name="com.kedacom.avcs.dispatch.common" level="INFO" additivity="false">
+        <appender-ref ref="DAILY_LOG"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="DAILY_LOG"/>
+    </root>
+
+
+</configuration>

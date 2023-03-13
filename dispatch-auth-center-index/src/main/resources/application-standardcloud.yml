@@ -1,0 +1,304 @@
+server:
+  servlet-path:
+  port: 8092
+logging:
+  level:
+    root: info
+
+spring:
+  datasource:
+    url: jdbc:mysql://192.168.9.249:3306/avcs_auth_0512?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&autoReconnect=true&rewriteBatchedStatements=true
+    username: root
+    password: m4R4YWn40QduqEKd
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    druid:
+      test-on-borrow: false
+      test-on-return: false
+  redis:
+    database: 15
+    host: 192.168.9.249
+    port: 8379
+    password: #123456
+  jpa:
+    database: MYSQL
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+        jdbc.batch_size: 500
+        order_inserts: true
+        order_updates: true
+  http:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  main:
+    allow-bean-definition-overriding: true
+
+  #kafka默认配置
+  kafka:
+    bootstrap-servers: 10.165.76.45:19098
+    consumer:
+      group-id: cdevice-manage-dispatch-avcs-dev1
+      enable-auto-commit: true
+      auto-offset-reset: earliest
+    # kafka多数据源配置，统一设备的kafka
+    secondary:
+      timeElapsed: false
+      batch-listeners:
+        - deviceclient
+      servers:
+        deviceclient: #设备权限kafka监听ra-role-notify,device-notify
+          consumer:
+            max-poll-records: 1000
+            fetch-min-size: 1024000 #bytes
+            fetch-max-wait: 300000
+            group-id: cdevice-manage-avcs-new-dev
+            enable-auto-commit: true
+            auto-offset-reset: earliest
+          bootstrap-servers: 10.165.76.45:19098
+        avcs: #融合通信内部使用kafka
+          consumer:
+            max-poll-records: 1000
+            fetch-max-wait: 500
+            fetch-min-size: 3500
+            group-id: avcsdev1014
+            enable-auto-commit: true
+            auto-offset-reset: latest
+          bootstrap-servers: 10.165.76.45:19098
+        ctserver: #ctsrever使用kafka
+          consumer:
+            group-id: cts
+            enable-auto-commit: true
+            auto-offset-reset: earliest
+            topic: kedamap-ct-data-connector-batch
+            single-topic: kedamap-ct-data-connector
+          bootstrap-servers: 10.165.76.45:19098
+      startup-policy: async #项目启动结束后进行kafka的监听
+#统一权限验证
+commons.oauth2.client:
+  client_id: ty-dispatch-server #标识
+  clientSecret: kFHct4NDglUQ  #密钥
+  grantType: password
+  serverUri: /cloud-rbac  #新区 服务端Server外网地址
+  serverInUri: http://cloud-rbac:8080  #新区 服务端Server内网地址(为了解决内网中调用不能用域名访问的问题)
+#  clientUri: https://dolphin-dev.kedacom.com/avcs2   #客户端地址
+  clientUri: /avcs2
+  serverName: cloud-rbac
+  jwtEnable: true #开启token 认证
+  kickSession: false #开启踢人
+  # adc 项目超管/部门管理员，两个角色缺一不可
+  username: avcs_dep_admin         #调用统一权限api使用
+  password: keda123#
+dispatch.common:
+  rbac:
+    projects:
+      clientIds: "ty-dispatch-server,dispatch-micoservice"
+      clientSecrets: "kFHct4NDglUQ,vKwAAC"
+    auth:
+      superAdminRoleSign: avcs_role2_super_admin # 音视频超级管理员标识
+      menuSign: avcs_menu
+      actionSign: avcs_action
+      online:
+        enabled: true
+        topic: AVCS_COMMON_ONLINE_STATUS2
+        expireIn: 60
+    dept:
+      showOwnDept: false
+      defaultSize: 100  # 部门默认分页大小
+  cdevice.url: http://192.168.9.139/cdevice-manage # 统一设备地址
+  #  cdevice.url: http://192.168.7.42/cdevice-manage # 统一设备地址
+  #  cdevice.url: http://dolphin-dev.kedacom.com/cdevice-manage # 统一设备地址
+  kdall.url: http://kstp-kdall-backend:8080/kdall  # 一机一档
+  adc:
+    device-max-size: 200
+  contact:
+    url: https://dispatch.testdolphin.com/kaas-server/open-api
+    clientId: tyDispatchBack
+    clientSecret: 4u08T8
+    #    url: http://dolphin-dev.kedacom.com/kaas-server/open-api  # 通讯录
+  #    clientId: tyDispatchBack
+  #    clientSecret: s5ba45
+  kiop.url: http://kiop-admin:8080/kiop-admin
+  kiop.enabled: true
+
+  avcs.contact:
+    url: http://192.168.9.208:8894/vacs808
+
+avcs.dispatch.common.data.file:
+  enabled: true
+  strategy: hd   # hd-硬盘 db-数据库 不推荐db，需要改数据库参数
+  basePath: D:\\avcs # 文件存储地址
+
+# 设备权限微服务
+kedacom.openapi.adc:
+  #  serverUri: http://192.168.7.42/ty-resource-auth
+  #  serverUri: http://192.168.9.208:9094/ra
+  serverUri: http://ty-resource-auth:8080/ty-resource-auth
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 2000
+        readTimeout: 20000
+  circuitbreaker:
+    enabled: true
+# feignclient 熔断机制，不需要修改
+hystrix:
+  threadpool:
+    default:
+      coreSize: 5
+      maxQueueSize: 1000 #BlockingQueue的最大队列数，默认值-1
+      queueSizeRejectionThreshold: 1000 #queueSizeRejectionThreshold该值后，请求也会被拒绝，默认值5
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: true
+        isolation:
+          thread:
+            timeoutInMilliseconds: 20000
+
+#跨域支持
+web.cors:
+  enabled: true
+  allowCredentials: true
+  allowedOrigins:
+    - '*'
+  allowedHeaders:
+    - '*'
+  allowedMethods:
+    - '*'
+
+flyway:
+  #是否开启flywary，默认true.
+  enabled: true
+  #迁移脚本的位置，默认db/migration.
+  locations: db/migration
+  #检查迁移脚本的位置是否存在，默认false(暂时启用会启动错误).
+  #check-location: true
+  #设置迁移时的编码，默认UTF-8.
+  encoding: UTF-8
+  #当迁移时发现目标schema非空，而且带有没有元数据的表时，是否自动执行基准迁移，默认false.
+  baseline-on-migrate: true
+  baseline-version: 1.0.0
+auth.center:
+  device:
+    maxSize: 500 # 批量授权时，循环中每次授权数量
+    maxQuerySize: 1000 # 设备查询的分页大小(分组授权、全部转授权过程中查询设备)  由设备权限服务性能决定，修改需与设备沟通
+  pool:
+    corePoolSize: 4
+    maximumPoolSize: 6
+    queueSize: 2000
+  mediaClientUrl: http://ty-dispatch-server:8080/avcs3 #融合通信地址，查询已使用并发量
+# 权限管理模块
+avcs:
+  cache:
+    backup:
+      enable: false
+  access:
+    # 超级管理员角色标示
+    superAdmin.sign: "avcs_role2_super_admin"
+    redisTimeOut:
+      # 权限控制模块-会场redis缓存过期时间，单位：秒
+      meetRoom: 600
+      # 权限控制模块-预案redis缓存过期时间，单位：秒
+      meetPlan: 660
+      # 权限控制模块-大屏redis缓存过期时间，单位：秒
+      bigScreen: 540
+      # 权限控制模块-静态资源redis缓存过期时间，单位：秒
+      staticResource: 480
+    #资源类型标识
+    resource.type: "{'error': 0, 'number': 4, 'resourceTypes': [{'value': 'H', 'label': '会场'},{'value': 'Y', 'label': '预案'},{'value': 'D', 'label': '大屏'},{'value': 'J', 'label': '静态资源'}]}"
+    #权限标识
+    auth.type: "{'error': 0, 'number': 3, 'authTypes': [{'value': 'R', 'label': '查看'},{'value': 'U', 'label': '修改'},{'value': 'D', 'label': '删除'}]}"
+    #权限标识
+    allAuth.type: "{'error': 0, 'number': 4, 'authTypes': [{'value': 'R', 'label': '查看'},{'value': 'U', 'label': '修改'},{'value': 'D', 'label': '删除'},{'value': 'M', 'label': '配置'}]}"
+  # 新媒体控制模块配置
+  dispatch:
+    es:
+      enable: true
+      host: 192.168.9.249
+      port: 9200  # http端口
+    component.newMediaControl:
+      enableDeviceAbility: true # 是否开启设备能力：true(缺省值)或false
+      memberIdType: deviceId # 传入成员id类型：deviceId(缺省值)或gbId
+    common:
+      rbac.superAdminRole.sign: avcs_role2_super_admin # 音视频超级管理员标识
+      cdevice.url: http://cdevice-manage:8080/cdevice-manage #统一设备地址，公共模块使用
+      adc.deviceTree.cache:
+        enable: true  # 设备树缓存是否开启
+        time: 1800    # 缓存时间，默认1800s（30min）
+      contact:
+        url: http://dolphin-dev.kedacom.com/kaas-server/open-api/  # 通讯录服务地址
+        clientId: tyDispatchBack
+        clientSecret: ivuX3O
+        tree.cache:
+          enable: true # 通讯录树是否开启
+          time: 1800   # 缓存时间，默认1800秒
+    controllist.topics: "avcs_dispatch_list_send_topic" #调度列表topic
+    socket:
+      kafka.enable: false #websocket是否走 kafka，默认不发kafka
+  mpControl:
+    bro:
+      defaultBizScreen: false #业务屏是否广播，默认不广播业务屏
+    lodMeetplan:
+      module: MEETLIST,BIZSCREEN,BROADCAST,TV_WALL,MONITOR_CTRL #预案加载成功所需模块
+  secretkey:
+    isOpen: false   #授权变更时，是否通知融合和轻服务更新缓存的有效期
+    callback:
+      url: https://192.168.9.208:9448/avcs3  #融合地址
+  mico:
+    secretkey:
+      callback:
+        url: https://192.168.9.208:9242/dispatch-micoservice  #轻服务地址
+
+keda.services:
+  #新媒体服务
+  media:
+    serverUri: http://192.168.9.249:8085 #新媒体服务地址
+    timeOut: 5500
+    isSkip: true
+    test.all.success: false
+    pictureSynthesis: true # 新媒体画面合成
+    callbackTopic: AVCS_DEVICE_STATUS_NOTIFY_2 #新媒体状态通知
+    groupNotifyTopic: AVCS_GROUP_NOTIFY
+    speakActionNotifyTopic: AVCS_SPEAKACTION_NOTIFY
+    callbackUrl: http://192.168.9.208:8095/avcs2/callback/notifyDeviceStatus
+    eventCallbackUrl: http://192.168.9.208:8095/avcs2/callback/notifyEvent
+    onDutyCallbackUrl: http://192.168.9.208:8095/avcs2/callback/notifyOnDuty #值守话权通知
+    selfMediaEnable: true # MT等设备是否在入会时设置自身为媒体源
+    reuseGroup: true #复用全部监看设备调度组
+    forcedDismantle: true #是否使用强拆, 当值为true时，reuseGroup配置不起作用，始终为false
+    maxDeviceNum: 200 #新媒体控制模块支持最大设备数量
+    delayTime: 200 #设备回调延时处理时间
+    testPTT: true #350M对讲机使用监控资源池测试
+    pttSourcePool: 32050700001320000149,32050700001320001149,32050700001320001249,32050700001320001349,31010600001320000140,31010600001320000146,31010600001320000168,31010600001320000181,31010600001320000158,31010600001320000137,31010600001320000152,31010600001320000161
+    record.serverUri: http://192.168.9.249:19020
+    recordManage.serverUri: http://192.168.9.249:8080
+    record:
+      isSkip: false
+      keepAlive: true
+    callCodeTest: "032133214564"
+    recIdTest: Rec7FDE6113E87FEC496
+    pttOnDutyTime: 40000
+    showText: true
+    memberAudioLevelNotifyTopic: AVCS_MEMBER_AUDIO_LEVEL_NOTIFY
+    audioLevelNotify: true
+    recordEventCallbackUrl: http://192.168.9.208:8095/avcs2/callback/record/notifySubscribe
+    recordEventNotifyTopic: AVCS_MEDIA_RECORD_EVENT
+    vlineServerUri: https://dispatch.testdolphin.com:59443
+    downloadUrl: https://dispatch.testdolphin.com:59443/vline/file/download?url=
+    secretChat:
+      subscriber: mapTapi02
+    maptask:
+      callbackUrl: http://192.168.9.208:8095/avcs2/map/task/callback/taskNotify #地图屏任务回调地址
+rsa:
+  activationPrikey: MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAK9ymcKLYNKTEgRWnwk/I0TqWQGLjB2Uyy5DDFkAhztrguFP3syZpcXqNepfhaejo7UBJop7sQ7F+LQnPel44yTg5nZjJcVexOzpe7cXhZTnV1joJt1nsOT3VEcDIGWP1cgu+Wtrge+5Ydb1AODbzkTKkek+L+8DwIB2BV45TlS9AgMBAAECgYEAj4YEWq2CK0C8gGgL+Zh41auP3D+4A4rxG4sl0rkn52fvzTl1XZJjliAesvgpchXfmfay/J5rHVa+OUHQ1+lYhjtk7GEe9We8eXJalhRQIqRdbURzC7JUZu22C3AShHQ73+betqJsWPNcs5QfC4CC0WeJdhZ7nC+ddh0n0/VqYQECQQDft55hkjSF99YsU46TUnYVaW5mgHeefM1b/wziSmKLfaiJEcvzoi3d08w1qdh9/LEmFq8ou9Bm1fcfzZIZyCyRAkEAyMPYdG3ZljCTfOdUgmms8TcUxCfIG3LPrzYqJn/ZJ8EiyVeei8gEyT+8eIrG5KLKi1nU/JibeYP/ktoRPacrbQJAN51J/i9+Zx9pWrOa6fzB5ijDjS+6jOexlYEeDtM3FD40u351GSfkBxUz2tNSQl+jGjjhalrmP+pI+Nr9yvL8QQJAYYnEv8weyjkPbr9072cn/okkLaimL6+39wf5snqqpgXPQMKw5Hho2t18U5QYzTvJ66nZMF90KbVXlaEcfzeYgQJBAKyYFExErkAs6dOtyeAsvwGd9CgEtJaNxUjIwYb99PpNnvjZMlX9w8bBh1wZ3jWRgPx+deyYAkuglLXOgsl6fg0=
+
+intranet.auto.deployment: false

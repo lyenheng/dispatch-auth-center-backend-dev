@@ -1,0 +1,1 @@
+ALTER TABLE `avcs_active_coding` ADD COLUMN `cancel_code` TEXT default null COMMENT '注销码';
